@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:motels/core/helpers/extensions/responsive_extension.dart';
-import 'package:motels/features/home/store/home_store.dart';
 import 'package:motels/features/home/view/components/city_dropdown_button.dart';
 import 'package:motels/features/home/view/components/date_dropdown_button.dart';
 
 class HeaderGoAnotherDayWidget extends StatelessWidget {
-  final HomeStore store;
-
-  const HeaderGoAnotherDayWidget({super.key, required this.store});
+  const HeaderGoAnotherDayWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +13,9 @@ class HeaderGoAnotherDayWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CityDropdownButton(store: store),
+          const CityDropdownButton(),
           SizedBox(width: 32.width),
-          DateDropdownButton(store: store),
+          const DateDropdownButton(),
         ],
       ),
     );

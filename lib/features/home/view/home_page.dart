@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:motels/core/helpers/extensions/responsive_extension.dart';
 import 'package:motels/core/helpers/feedback/feedback_handler.dart';
 import 'package:motels/core/ui/styles/colors_app.dart';
 import 'package:motels/core/ui/styles/text_styles.dart';
-import 'package:motels/core/utils/di/di_provider.dart';
+import 'package:motels/core/widgets/custom_button.dart';
 import 'package:motels/core/widgets/line_divider_widget.dart';
-import 'package:motels/features/home/store/home_store.dart';
+import 'package:motels/features/home/cubit/home_cubit.dart';
+import 'package:motels/features/home/cubit/home_state.dart';
 import 'package:motels/features/home/view/components/filter_widget.dart';
 import 'package:motels/features/home/view/components/go_now_body.dart';
 import 'package:motels/features/home/view/components/header_go_another_day_widget.dart';
@@ -22,73 +24,42 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late HomeStore store;
-  bool _initialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      store = context.di<HomeStore>();
-      _initialized = true;
-      store.addListener(_onStoreChanged);
-      WidgetsBinding.instance.addPostFrameCallback((timestamp) async {
-        await _setupConfigs();
-      });
-    }
-  }
-
-  void _onStoreChanged() {
-    if (store.errorMessage != null && store.errorMessage!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          FeedbackHandler.showSnackBar(
-            context: context,
-            isSuccess: false,
-            message: store.errorMessage!,
-          );
-          store.clearError();
-        }
-      });
-    }
-  }
-
-  Future<void> _setupConfigs() async {
-    await store.setupConfigs();
-  }
-
-  @override
-  void dispose() {
-    store.removeListener(_onStoreChanged);
-    super.dispose();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HomeCubit>().setupConfigs();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: store,
-      builder: (context, _) {
+    return BlocConsumer<HomeCubit, HomeState>(
+      listener: (context, state) {
+        if (state is HomeError) {
+          FeedbackHandler.showSnackBar(
+            context: context,
+            isSuccess: false,
+            message: state.message,
+          );
+        }
+      },
+      builder: (context, state) {
         return Scaffold(
           backgroundColor: context.colors.primary,
-          appBar: HomeAppBar(
-            store: store,
-          ),
+          appBar: const HomeAppBar(),
           body: Column(
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: 60.height, minHeight: 60.height),
                 child: PageView(
-                  controller: store.pageController,
+                  controller: context.read<HomeCubit>().pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   scrollDirection: Axis.vertical,
                   reverse: true,
-                  children: [
-                    HeaderGoNowWidget(
-                      store: store,
-                    ),
-                    HeaderGoAnotherDayWidget(
-                      store: store,
-                    ),
+                  children: const [
+                    HeaderGoNowWidget(),
+                    HeaderGoAnotherDayWidget(),
                   ],
                 ),
               ),
@@ -104,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     SizedBox(height: 12.height),
-                    FilterWidget(store: store),
+                    const FilterWidget(),
                     LineDividerWidget(
                       firstPadding: 12.height,
                       secondPadding: 0,
@@ -112,20 +83,37 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              ValueListenableBuilder(
-                valueListenable: store.screenLoaded,
-                builder: (context, isLoaded, _) {
-                  return !isLoaded
-                      ? const Expanded(
-                          child: SkeletonGoNowWidget(),
-                        )
-                      : Expanded(
-                          child: GoNowBody(
-                            store: store,
+              if (state is HomeLoading)
+                const Expanded(child: SkeletonGoNowWidget())
+              else if (state is HomeLoaded)
+                const Expanded(
+                  child: GoNowBody(),
+                )
+              else if (state is HomeError)
+                Expanded(
+                  child: Container(
+                    height: double.maxFinite,
+                    width: double.maxFinite,
+                    color: context.colors.neutralShade100,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Erro ao carregar dados',
+                            style: context.textStyles.titleMedium,
                           ),
-                        );
-                },
-              ),
+                          SizedBox(height: 16.height),
+                          CustomButton(
+                            onPressed: () => context.read<HomeCubit>().loadMotels(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                const Expanded(child: SkeletonGoNowWidget()),
             ],
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

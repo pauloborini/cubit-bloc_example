@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:motels/core/helpers/extensions/responsive_extension.dart';
 import 'package:motels/core/ui/styles/colors_app.dart';
 import 'package:motels/core/ui/styles/text_styles.dart';
 import 'package:motels/core/widgets/custom_icon_button.dart';
 import 'package:motels/core/widgets/custom_text_button.dart';
-import 'package:motels/features/home/store/home_store.dart';
+import 'package:motels/features/home/cubit/home_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class FilterBottomSheet extends StatelessWidget {
-  final HomeStore store;
-
-  const FilterBottomSheet({super.key, required this.store});
+  const FilterBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +33,7 @@ class FilterBottomSheet extends StatelessWidget {
           CustomTextButton(
             label: 'limpar',
             labelSize: 16.font,
-            onPressed: () => store.clearFilters(),
+            onPressed: () => context.read<HomeCubit>().clearFilters(),
           ),
           SizedBox(width: 12.width),
         ],
