@@ -1,13 +1,13 @@
-# Processo seletivo
+# Exemplo do Cubit/BLoC
 
-## Aplicativo para avaliação técnica no processo seletivo.
+## Aplicativo para exemplificar a utilização do Cubit
 
 ## ️ Tecnologias Utilizadas
 
 - Flutter
-- Provider
+- BLoC
 - HTTP
-- Mockito
+- Mockito (Testes serão implementados posteriormente)
 
 ## Funcionalidades
 
