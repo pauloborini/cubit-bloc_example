@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:motels/core/helpers/extensions/responsive_extension.dart';
 import 'package:motels/core/helpers/ui/modal_helper.dart';
 import 'package:motels/core/ui/styles/colors_app.dart';
